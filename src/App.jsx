@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Sphere, MeshDistortMaterial } from '@react-three/drei';
 import {
   Github,
   Linkedin,
@@ -157,6 +159,21 @@ function Navbar({ active, onNav }) {
         </div>
       </div>
     </header>
+  );
+}
+
+function AnimatedSphere() {
+  const meshRef = useRef();
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x = state.clock.elapsedTime * 0.1;
+      meshRef.current.rotation.y = state.clock.elapsedTime * 0.15;
+    }
+  });
+  return (
+    <Sphere ref={meshRef} args={[2.5, 64, 64]} position={[0, 0, -2]} scale={2}>
+      <MeshDistortMaterial color="#00e5ff" attach="material" distort={0.7} speed={1} roughness={0.1} metalness={0.8} />
+    </Sphere>
   );
 }
 
@@ -377,6 +394,12 @@ function Projects() {
       desc: ' A farmer helping web app .Realtime collaboration with presence, comments, and tasks.',
       image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1600&auto=format&fit=crop',
       tags: ['React', 'WebSockets', 'Figma']
+    },
+    {
+      title: 'Road Error Detector',
+      desc: 'An AI model that finds errors and damages in roads.',
+      image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=800&auto=format&fit=crop',
+      tags: ['React', 'Python', 'AI']
     },
     {
       title: 'Brand Portfolio',
@@ -618,21 +641,32 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-white">
-      <Navbar active={active} onNav={onNav} />
+    <div className="min-h-screen text-white relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-screen z-[0]">
+        <Canvas>
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[2, 5, 2]} intensity={2} color="#00e5ff" />
+          <directionalLight position={[-2, -5, -2]} intensity={1} color="#7c3aed" />
+          <AnimatedSphere />
+        </Canvas>
+      </div>
+      
+      <div className="relative z-10">
+        <Navbar active={active} onNav={onNav} />
 
-      <main className="pt-6">
-        <Hero onCTAClick={(e) => {
-          document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }} />
-        <About />
-        <Skills />
-        <Projects />
-        <Experience />
-        <Contact />
-      </main>
+        <main className="pt-6">
+          <Hero onCTAClick={(e) => {
+            document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }} />
+          <About />
+          <Skills />
+          <Projects />
+          <Experience />
+          <Contact />
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 }
